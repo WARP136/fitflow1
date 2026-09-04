@@ -1,0 +1,229 @@
+{
+  "$comment": "FitFlow asset + integration manifest. Every animation the app looks for, and every external API it calls. Nothing here is required for the app to run - each entry lists what happens when it is missing.",
+  "lottie": {
+    "folder": "public/lottie/",
+    "source": "https://lottiefiles.com  (Free filter on, download as 'Lottie JSON')",
+    "rules": [
+      "Filenames must match exactly: lowercase, no spaces, .json extension.",
+      "Downloads usually arrive as 'jumping jacks.json' - rename to 'jumpingjacks.json'.",
+      "Files are fetched at runtime, so a missing one can never break the build.",
+      "The page is near-black now, so prefer light line/outline animations in a single bright colour. A dark-stroked animation disappears; a full-colour 3D one fights the aurora behind it.",
+      "Run `npm run assets` at any time to see which files are present and which are still missing."
+    ],
+    "files": [
+      {
+        "file": "pushup.json",
+        "required": true,
+        "where": "Move -> exercise timer, the Pushups card",
+        "search": "pushup, push up exercise, workout man pushup",
+        "prefer": "Side view, loops cleanly, one figure, no background",
+        "fallback": "A soft pulsing CSS circle in the accent colour",
+        "notes": "Driven by the timer: parked on frame 0 until Start, speed set by the energy choice (1.00x at Steady to 1.50x at Full-send)."
+      },
+      {
+        "file": "jumpingjacks.json",
+        "required": true,
+        "where": "Move -> exercise timer, the Jumping jacks card",
+        "search": "jumping jacks, star jump exercise",
+        "prefer": "Front view, symmetric, loops cleanly",
+        "fallback": "Pulsing CSS circle",
+        "notes": "Rename after download - the file almost always has a space in it."
+      },
+      {
+        "file": "jumpingsquats.json",
+        "required": true,
+        "where": "Move -> exercise timer, the Jumping squats card",
+        "search": "squat exercise, jump squat, squats animation",
+        "prefer": "Side view so the hinge is visible",
+        "fallback": "Pulsing CSS circle",
+        "notes": "A plain squat animation is fine if you cannot find a jump squat."
+      },
+      {
+        "file": "water.json",
+        "required": true,
+        "where": "Water -> replays from frame 0 every time you log a glass",
+        "search": "water glass, water drop, drinking water, hydration",
+        "prefer": "Short, under 2 seconds, ends where it starts",
+        "fallback": "Pulsing CSS circle",
+        "notes": "This is the celebration beat. A long animation reads as slow, so keep it short."
+      },
+      {
+        "file": "meditate.json",
+        "required": true,
+        "where": "Welcome -> the hero, over half the viewport wide and bled off two edges (src/pages/Welcome.jsx). Today -> atmosphere behind the tile grid: 22px blur, 14% opacity, parked on frame one (src/pages/Dashboard.jsx).",
+        "search": "woman meditating, yoga meditation, lotus pose",
+        "prefer": "One figure, calm loop, no background layer",
+        "fallback": "A breathing gradient block the same size, so the layout never jumps",
+        "notes": "The largest graphic in the app and the first thing a judge sees. On Welcome she plays and she is bled past the edge on purpose - the frame crops her rather than framing her. On Today she is blurred and frozen instead: a recognisable person doing yoga behind the buttons pulls the eye off the buttons, and a CSS blur over a playing SVG repaints every frame for motion invisible at that opacity. Same file, two jobs."
+      },
+      {
+        "file": "neha.json",
+        "required": true,
+        "where": "Neha -> the portrait at the top of the context column (src/pages/Chat.jsx), and Your week -> the milestone note (src/pages/WeeklyWrap.jsx)",
+        "search": "smiling woman, friendly woman waving, happy girl character",
+        "prefer": "Warm, looping, face visible, no background",
+        "fallback": "A sparkle icon in the accent colour",
+        "notes": "Gives the companion a face. Sitting behind a radial accent glow, so a transparent background matters more here than anywhere else."
+      },
+      {
+        "file": "jogging.json",
+        "required": false,
+        "where": "Jog -> shown before you press Start (src/pages/JogTracker.jsx)",
+        "search": "running man, jogging, runner side view",
+        "prefer": "Side view, loops, runs left to right",
+        "fallback": "Pulsing CSS circle",
+        "notes": "Disappears once the route starts, so it is pure atmosphere."
+      }
+    ]
+  },
+  "images": {
+    "$comment": "The app deliberately ships with no photography. All texture comes from the WebGL aurora, the full-bleed gradient field and the Lottie characters. These are the only image files worth adding.",
+    "files": [
+      {
+        "file": "public/favicon.svg",
+        "required": false,
+        "where": "Browser tab",
+        "how": "A rounded square in #0A0F0D with a #34D399 F, 32x32. Twenty seconds in Figma, and it stops the default Vite icon showing up in your screen recording.",
+        "notes": "index.html already points at /favicon.svg. #34D399 is the Steady accent - the app's home colour."
+      },
+      {
+        "file": "public/og.png",
+        "required": false,
+        "where": "Link preview if you share the deployed URL",
+        "how": "1200x630, near-black background, the wordmark and the tagline in the accent green",
+        "notes": "Only matters if you paste the link into a chat during judging."
+      }
+    ],
+    "avoid": [
+      "Stock gym photography - it is exactly the visual language this product is arguing against.",
+      "Unsplash hotlinks - they need network and will break the demo on venue wifi."
+    ]
+  },
+  "apis": [
+    {
+      "name": "Groq (LLM)",
+      "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+      "model": "chosen at runtime, never hardcoded",
+      "key": "VITE_GROQ_API_KEY - free, no card, from console.groq.com",
+      "where": "Neha, the chat companion",
+      "file": "src/services/neha.js",
+      "cors": "Allows browser requests",
+      "fallback": "Eight hand-written replies. The pill under the chat says 'No key - written replies' when there is no key, or 'Answered offline - <reason>' when Groq itself refused, so a silent fallback is never mistaken for a live answer.",
+      "status": "wired",
+      "notes": "There is deliberately no model id in this file or in the code's happy path. Groq retires ids on its own schedule and this app was once dead for exactly that reason - 'The model llama-3.1-8b-instant does not exist'. So neha.js GETs https://api.groq.com/openai/v1/models, scores what your key can actually see, caches the listing, remembers any id that 404s so it is never retried, and only falls back to a short static list if the listing itself fails. VITE_GROQ_MODEL still overrides all of that, which is why .env.example ships it commented out - pinning an id is how the outage happened. Vite reads .env only at startup, so restart the dev server after changing it."
+    },
+    {
+      "name": "Open Food Facts (search)",
+      "endpoint": "https://world.openfoodfacts.org/cgi/search.pl",
+      "key": null,
+      "where": "Food -> the search box",
+      "file": "src/services/food.js",
+      "cors": "Open",
+      "fallback": "A local pantry of 14 common foods",
+      "status": "wired"
+    },
+    {
+      "name": "Open Food Facts (barcode)",
+      "endpoint": "https://world.openfoodfacts.org/api/v2/product/{barcode}.json",
+      "key": null,
+      "where": "Scan a label -> after the camera or the typed number gives us a code",
+      "file": "src/services/food.js  (lookupBarcode, normaliseLabel, readLabel)",
+      "cors": "Open",
+      "fallback": "Two full offline products - Nutella 3017620422003 and Coca-Cola 5449000000996 - so the demo works with the wifi off. Any other unknown code says so plainly.",
+      "status": "wired",
+      "notes": "Returns HTTP 404 with a real body for codes it has never seen, so the 404 is read rather than thrown. nutriscore_grade is deliberately NOT read: numbers inform, grades judge. Nothing on the page is printed in red."
+    },
+    {
+      "name": "Open-Meteo",
+      "endpoint": "https://api.open-meteo.com/v1/forecast",
+      "key": null,
+      "where": "Today -> focus card pill, Jog -> header line, and it is passed to Neha as context",
+      "file": "src/services/weather.js",
+      "cors": "Open",
+      "fallback": "'No weather right now - go by how you feel'",
+      "status": "wired",
+      "notes": "Coordinates are hardcoded to Delhi. Geolocation is deliberately not used - a permission prompt in the middle of a demo is a bad moment."
+    },
+    {
+      "name": "wger exercise database",
+      "endpoint": "https://wger.de/api/v2/exercise/search/",
+      "key": null,
+      "where": "Move -> the movement library search",
+      "file": "src/services/wgerApi.js",
+      "cors": "Open",
+      "fallback": "A local library of 14 movements",
+      "status": "wired",
+      "notes": "Only the name and muscle group are read. Difficulty is ignored on purpose."
+    },
+    {
+      "name": "Quotable",
+      "endpoint": "https://api.quotable.io/quotes/random?limit=5&tags=inspirational",
+      "key": null,
+      "where": "Today -> the 'A thought' panel",
+      "file": "src/services/quotesApi.js",
+      "cors": "Open",
+      "fallback": "Eight hand-written lines",
+      "status": "wired",
+      "notes": "Results pass a tone filter first - anything containing 'no excuse', 'grind', 'discipline', 'lazy' and similar is rejected, because a live quote must not be able to guilt-trip the user. ZenQuotes was rejected outright: it sends no CORS headers, so it cannot be called from a browser at all."
+    },
+    {
+      "name": "Diet targets (local, no API)",
+      "endpoint": null,
+      "key": null,
+      "where": "Meal plan -> BMI, calories, macros and the generated day of food",
+      "file": "src/services/dietPlan.js",
+      "cors": null,
+      "fallback": "None needed - it is pure maths and runs offline",
+      "status": "wired",
+      "notes": "Mifflin-St Jeor BMR, standard activity factors, and a small linear solver that hits the calorie and protein target together. There is no free 'diet plan API' worth trusting; the food table matches the Food page pantry so a generated meal and a logged meal never disagree."
+    },
+    {
+      "name": "OpenStreetMap tiles",
+      "endpoint": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "key": null,
+      "where": "Jog -> the map",
+      "file": "src/pages/JogTracker.jsx",
+      "cors": "Open",
+      "fallback": "Grey canvas. The route line, distance, pace and voice coach all still work.",
+      "status": "wired"
+    },
+    {
+      "name": "Barcode decoding (no network, no package)",
+      "endpoint": "browser built-in",
+      "key": null,
+      "where": "Scan a label -> reads the barcode straight out of the webcam feed",
+      "file": "src/services/barcode.js (camera + throttle) and src/services/ean.js (the decoder itself)",
+      "cors": null,
+      "fallback": "Typed entry, which is always on the page next to the camera - plus the two demo codes. The page tells you in one sentence exactly why the camera is unavailable, and a pill says which decoder is running: \"Browser decoder\" or \"Built-in decoder\".",
+      "status": "wired",
+      "notes": "Two decoders. The browser's own BarcodeDetector is used where it exists, because it is free and reads formats we do not (Code 128, QR). It is NOT on Chrome or Edge for Windows - the Shape Detection API is only backed on Android, macOS and ChromeOS - so src/services/ean.js decodes EAN-13, UPC-A and EAN-8 in pure JS as the everyday path on a Windows laptop. It reads run lengths off 19 rows and 5 columns of each frame, tried centre-first so the common case costs two reads rather than twenty-four, normalises every digit to 7 modules so distance and zoom do not matter, recovers the 13th digit from the left-hand parity pattern, and checks the mod-10 digit. Two independent edge finders run per line - threshold crossings, then gradient peaks - because a lens blurs thin bars more than thick ones and the two methods fail on different lines: 81% of lines together against 66-71% alone. Still zero npm dependencies, where zxing-js or quagga2 would be 300-600 KB of WASM. It insists on the same number from two separate frames before firing. getUserMedia needs a secure context and localhost counts as one; the camera track is stopped on unmount so it can never stay lit after you navigate away.",
+      "resolution": "The one number that decides whether this works: pixels per module = frame width x fraction of the width the barcode fills / 95. The decoder needs about 2.7 and refuses below 0.85. This code once downscaled every frame to 640px first, which turned a legible 2.7 into an impossible 1.3 and was the entire reason the camera 'never found anything'. So barcode.js asks the camera for 1920x1080 rather than accepting the 640x480 it would otherwise be handed, ean.js treats its maxWidth as a cap and not a target, and each scanline is fetched as its own 1px getImageData so reading a full-resolution frame costs ~150 KB instead of 8 MB. facingMode 'environment' is requested only on touch devices, because on a Windows laptop it matches nothing and can hand you the infrared Windows Hello sensor instead of the webcam. The Scan page prints the frames examined and the resolution the camera actually agreed to, so a camera stuck at 640x480 announces itself instead of looking broken.",
+      "tests": "scripts/verify.mjs check 11 encodes real symbols from the published bit tables and makes the decoder read them back through synthetic blur, noise and uneven light. Check 12 exists because check 11 passed happily while the scanner was broken - the bug was one layer further out. It builds whole camera frames at 8x resolution, blurs by about one camera pixel, area-averages down the way a sensor does, and runs the real frame decoder: 7 of 7 read end to end down to 2.2 px per module, none survive a 640px downscale, and barcode.js is statically asserted to still ask for at least 1280."
+    },
+    {
+      "name": "Web Speech API",
+      "endpoint": "browser built-in",
+      "key": null,
+      "where": "Jog -> the voice coach. Neha -> the 'Reading aloud' toggle and the per-message replay button. Speaking rate follows the energy choice, inverted from the animation tempo.",
+      "file": "src/services/voice.js",
+      "cors": null,
+      "fallback": "The toggle honestly reports that the browser has no speech support and disables itself",
+      "status": "wired",
+      "notes": "Prefer Edge or Chrome; Firefox speech synthesis is patchy. The API exposes no gender field, so voice.js asks for an American woman BY NAME and degrades politely: Microsoft Aria / Jenny / Michelle (Edge's Online Natural voices), then Zira, then Google US English, then Samantha or Ava on macOS, then any en-US voice whose name is not on a list of male ones. Whichever it lands on is printed in the chat's privacy card, because a voice you cannot identify is a voice you cannot change. getVoices() is asynchronous and returns [] on a cold start, so primeVoices() re-picks on the onvoiceschanged event and the chat polls currentVoice() briefly. Neha's voice defaults OFF, never speaks the greeting, and is triggered from send() rather than an effect on the message list - otherwise reopening the page would read yesterday's reply aloud. forSpeech() strips markdown first, because some browsers pronounce asterisks."
+    }
+  ],
+  "notWired": [
+    {
+      "name": "Nutritionix / Edamam / Spoonacular",
+      "why": "All three need a key, and the free tiers rate-limit hard enough to fail mid-demo. Open Food Facts plus the local calculator covers the same ground with nothing to leak."
+    },
+    {
+      "name": "ExerciseDB (RapidAPI)",
+      "why": "Needs a RapidAPI key and returns GIFs that would have to be hotlinked. wger is open and keyless."
+    },
+    {
+      "name": "Google Fit / Apple Health / Fitbit",
+      "why": "OAuth consent screens plus app review. Not a hackathon-weekend integration."
+    }
+  ]
+}

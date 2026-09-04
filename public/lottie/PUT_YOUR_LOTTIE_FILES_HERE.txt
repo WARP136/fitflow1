@@ -1,0 +1,12 @@
+Drop your downloaded LottieFiles .json animations in THIS folder, named exactly:
+
+  pushup.json          (you have this)
+  jumpingjacks.json    (you have this - rename it to remove spaces)
+  jumpingsquats.json   (you have this - rename it to remove spaces)
+  water.json           (you have this)
+  stretch.json         (optional - onboarding)
+  jogging.json         (optional - jog tracker empty state)
+  celebrate.json       (optional - weekly wrap milestone)
+
+Any file that is missing is handled gracefully: the app draws a CSS
+fallback animation instead and never crashes. So ship with 4 or 7, both work.
